@@ -3,7 +3,7 @@ const router = express.Router();
 const logger = require("./../utils/logger");
 const authMiddleware = require("../middlewares/auth-middleware");
 const allowRolesMiddleware = require("../middlewares/role-middleware");
-const Publisher = require("./../db/publisher");
+const Publisher = require("./../models/publisher");
 
 router.get(
   "/",

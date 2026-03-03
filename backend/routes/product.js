@@ -3,12 +3,12 @@ const upload = require("../utils/multer");
 const path = require("path");
 const fs = require("fs");
 const router = express.Router();
-const Book = require("./../db/book");
-const Publisher = require("./../db/publisher");
-const Category = require("./../db/category");
+const Book = require("../models/product");
+const Publisher = require("../models/publisher");
+const Category = require("../models/category");
 const authMiddleware = require("../middlewares/auth-middleware");
 const allowRolesMiddleware = require("../middlewares/role-middleware");
-const logger = require("./../utils/logger");
+const logger = require("../utils/logger");
 
 router.get("/", async (req, res) => {
   try {

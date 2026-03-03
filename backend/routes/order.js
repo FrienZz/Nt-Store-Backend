@@ -2,10 +2,10 @@ const express = require("express");
 const router = express.Router();
 const authMiddleware = require("../middlewares/auth-middleware");
 const allowRolesMiddleware = require("../middlewares/role-middleware");
-const Order = require("../db/order");
-const Cart = require("../db/cart");
+const Order = require("../models/order");
+const Cart = require("../models/cart");
 const generateOrderId = require("../utils/generateId");
-const Book = require("../db/book");
+const Book = require("../models/product");
 const logger = require("./../utils/logger");
 
 router.get(
