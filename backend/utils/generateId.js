@@ -1,12 +1,19 @@
 const { customAlphabet } = require("nanoid");
 
-const generateOrderId = () => {
-  const date = new Date().toISOString().slice(2, 10).replace(/-/g, "");
-
-  const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 6);
-  const randomPart = nanoid();
-
-  return `ORD-${date}-${randomPart}`;
+const nanoid = customAlphabet("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 6);
+const getDatePart = () => {
+  return new Date().toISOString().slice(2, 10).replace(/-/g, "");
 };
 
-module.exports = generateOrderId;
+const generateOrderId = () => {
+  return `ORD-${getDatePart()}-${nanoid()}`;
+};
+
+const generateProductId = () => {
+  return `PROD-${getDatePart()}-${nanoid()}`;
+};
+
+module.exports = {
+  generateOrderId,
+  generateProductId,
+};
