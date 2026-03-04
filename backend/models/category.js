@@ -5,7 +5,7 @@ const categorySchema = new Schema(
   {
     category_type: {
       type: String,
-      required: [true, "Category is required."],
+      required: true,
       unique: true,
     },
   },
