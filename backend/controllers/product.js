@@ -150,6 +150,13 @@ exports.editProduct = async (req, res) => {
   const productId = req.params.id;
   const updateData = req.body;
   try {
+    //ไม่อนุญาติให้แก้ไขประเภทของสินค้าได้
+    if (updateData.type) {
+      return res.status(400).json({
+        message: "ไม่สามารถเปลี่ยนประเภทสินค้าได้",
+      });
+    }
+
     const product = await Product.findOne({ product_id: productId });
 
     if (!product) {
@@ -159,6 +166,18 @@ exports.editProduct = async (req, res) => {
       return res.status(404).json({
         message: `ไม่เจอสินค้านี้ในระบบ`,
       });
+    }
+
+    if (updateData.total_stock) {
+      if (product.type === "package") {
+        return res.status(400).json({
+          message: `สินค้าแพ็คเกจไม่สามารถแก้จำนวนสินค้าในสต๊อกได้`,
+        });
+      } else if (product.type === "single") {
+        updateData.available_stock =
+          updateData.total_stock -
+          (product.total_stock - product.available_stock);
+      }
     }
 
     if (req.file) {
@@ -193,13 +212,7 @@ exports.editProduct = async (req, res) => {
       }
     }
 
-    if (updateData.total_stock) {
-      updateData.available_stock =
-        updateData.total_stock -
-        (product.total_stock - product.available_stock);
-    }
-
-    const updateBook = await Product.findOneAndUpdate(
+    const updateProduct = await Product.findOneAndUpdate(
       { product_id: productId },
       { $set: updateData },
       { new: true },
@@ -211,7 +224,7 @@ exports.editProduct = async (req, res) => {
     );
     res.status(201).json({
       message: "อัพเดทข้อมูลสินค้าสำเร็จ",
-      update_data: updateBook,
+      update_data: updateProduct,
     });
   } catch (err) {
     logger.error(`เกิดข้อผิดพลาดในการแก้ข้อมูลสินค้า: ${err.message}`);
