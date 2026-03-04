@@ -5,7 +5,7 @@ const categorySchema = new Schema(
   {
     category_type: {
       type: String,
-      required: true,
+      required: [true, "กรุณาระบุประเภทหมวดหมู่"],
       unique: true,
     },
   },
