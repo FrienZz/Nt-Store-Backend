@@ -80,7 +80,7 @@ const productSchema = new Schema(
     package_items: {
       type: [
         {
-          product_id: {
+          product: {
             type: Schema.Types.ObjectId,
             ref: "Product",
             required: [true, "กรุณาเลือกสินค้าในแพ็คเกจ"],
