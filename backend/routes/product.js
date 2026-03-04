@@ -32,4 +32,11 @@ router.delete(
   productController.deleteProduct,
 );
 
+router.delete(
+  "/:id/package-items/:itemId",
+  authMiddleware,
+  allowRolesMiddleware("พนักงานร้าน"),
+  productController.deletePackageItem,
+);
+
 module.exports = router;

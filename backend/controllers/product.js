@@ -264,7 +264,7 @@ exports.deleteProduct = async (req, res) => {
       { new: true },
     );
     logger.info(
-      `ลบข้อมูลหนังสือสำเร็จ: รหัสสินค้า=${product.product_id} ชื่อสินค้า=${product.name} โดยรหัสผู้ใช้งาน=${req.user.id}`,
+      `ลบข้อมูลสินค้าสำเร็จ: รหัสสินค้า=${product.product_id} ชื่อสินค้า=${product.name} โดยรหัสผู้ใช้งาน=${req.user.id}`,
     );
     res.status(200).json({
       message: "ลบข้อมูลสินค้าสำเร็จ",
@@ -272,6 +272,70 @@ exports.deleteProduct = async (req, res) => {
     });
   } catch (err) {
     logger.error(`เกิดข้อผิดพลาดในการลบข้อมูลสินค้า: ${err.message}`);
+    res.status(400).json({
+      message: err.message,
+    });
+  }
+};
+
+exports.deletePackageItem = async (req, res) => {
+  const { id, itemId } = req.params;
+  try {
+    const packageData = await Product.findOne(
+      {
+        product_id: id,
+        type: "package",
+        "package_items.product": itemId,
+      },
+      {
+        package_items: { $elemMatch: { product: itemId } },
+      },
+    )
+      .populate(
+        "package_items.product",
+        "product_id name img_url price total_stock available_stock",
+      )
+      .lean();
+
+    if (!packageData) {
+      logger.error(
+        `ลบข้อมูลสินค้าไม่สำเร็จ: ไม่เจอรหัสสินค้าแพ็คเกจ=${id} หรือรหัสสินค้า=${itemId} นี้ในระบบ`,
+      );
+      return res.status(404).json({
+        message: "ไม่พบสินค้านี้ในแพ็คเกจ",
+      });
+    }
+
+    // packageData ที่ได้ยังเป็น array อยู่
+    const removedItem = packageData.package_items[0];
+
+    const result = await Product.updateOne(
+      {
+        product_id: id,
+        $expr: { $gt: [{ $size: "$package_items" }, 1] }, //สินค้าในแพ็คเกจต้องมากกว่า 1
+      },
+      {
+        $pull: { package_items: { product: itemId } },
+      },
+    );
+
+    if (result.modifiedCount === 0) {
+      return res.status(400).json({
+        message: "ไม่สามารถลบสินค้าได้ (อาจเหลือชิ้นเดียว หรือไม่พบสินค้า)",
+      });
+    }
+
+    logger.info(
+      `ลบข้อมูลสินค้าในแพ็คเกจสำเร็จ: รหัสสินค้าแพ็คเกจ=${id} รหัสสินค้าที่ถูกลบ=${itemId} โดยรหัสผู้ใช้งาน=${req.user.id}`,
+    );
+    res.status(200).json({
+      message: "ลบสินค้าออกจากแพ็คเกจสำเร็จ",
+      delete_data: removedItem,
+    });
+  } catch (err) {
+    logger.error(
+      `เกิดข้อผิดพลาดในการลบข้อมูลสินค้าออกจากแพ็คเกจ: ${err.message}`,
+    );
     res.status(400).json({
       message: err.message,
     });
