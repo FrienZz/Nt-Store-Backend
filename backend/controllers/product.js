@@ -1,12 +1,7 @@
-const express = require("express");
-const upload = require("../utils/multer");
 const path = require("path");
 const fs = require("fs");
-const router = express.Router();
 const Product = require("../models/product");
 const Category = require("../models/category");
-const authMiddleware = require("../middlewares/auth-middleware");
-const allowRolesMiddleware = require("../middlewares/role-middleware");
 const logger = require("../utils/logger");
 const { generateProductId } = require("../utils/generateId");
 
@@ -30,6 +25,10 @@ exports.getAllProducts = async (req, res) => {
 
     const products = await Product.find(filter)
       .populate("categories", "category_type")
+      .populate({
+        path: "package_items.product",
+        select: "product_id name img_url price total_stock available_stock",
+      })
       .sort({ createdAt: -1 })
       .lean();
 
@@ -47,15 +46,13 @@ exports.getAllProducts = async (req, res) => {
 exports.getProduct = async (req, res) => {
   const productId = req.params.id;
   try {
-    const product = await Product.findOne({ product_id: productId })
+    let product = await Product.findOne({ product_id: productId })
       .populate("categories", "category_type")
+      .populate({
+        path: "package_items.product",
+        select: "product_id name img_url price total_stock available_stock",
+      })
       .lean();
-
-    if (!product) {
-      return res.status(404).json({
-        message: "ไม่เจอสินค้าที่ระบุในระบบ",
-      });
-    }
 
     res.status(200).json({
       message: "เรียกดูข้อมูลสินค้าสำเร็จ",
