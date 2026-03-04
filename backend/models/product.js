@@ -90,8 +90,8 @@ const productSchema = new Schema(
             required: [true, "กรุณาระบุจำนวนสินค้าในแพ็คเกจ"],
             min: [1, "จำนวนสินค้าในแพ็คเกจต้องมีอย่างน้อย 1 ชิ้น"],
           },
+          _id: false,
         },
-        { _id: false },
       ],
       default: undefined, // มีเฉพาะ type=package
     },
