@@ -71,7 +71,6 @@ exports.getProduct = async (req, res) => {
 exports.addProduct = async (req, res) => {
   try {
     const { categories, type, package_items } = req.body;
-    console.log(req.body);
 
     const validCategories = await Category.find({ _id: { $in: categories } });
     const categoriesArray = Array.isArray(categories)
@@ -110,10 +109,17 @@ exports.addProduct = async (req, res) => {
           message: "แพ็คเกจต้องมีสินค้าอย่างน้อย 1 รายการ",
         });
       }
+      //covert json string to object js
+      let parsedPackageItems = JSON.parse(req.body.package_items);
 
-      const productIds = package_items.map((item) => item.product_id);
+      if (!Array.isArray(parsedPackageItems)) {
+        return res.status(400).json({
+          message: "รูปแบบ package_items ไม่ถูกต้อง",
+        });
+      }
+      const productIds = parsedPackageItems.map((item) => item.product);
       const existingProducts = await Product.find({
-        product_id: { $in: productIds },
+        _id: { $in: productIds },
         type: "single",
       });
 
@@ -122,6 +128,8 @@ exports.addProduct = async (req, res) => {
           message: "มีสินค้าในแพ็คเกจบางรายการไม่ถูกต้อง",
         });
       }
+
+      productData.package_items = parsedPackageItems;
     }
 
     const product = new Product(productData);
