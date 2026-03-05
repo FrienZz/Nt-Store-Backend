@@ -3,26 +3,22 @@ const { Schema, Types } = mongoose;
 
 const cartSchema = new Schema(
   {
-    userId: {
+    user: {
       type: Types.ObjectId,
       ref: "users",
+      required: [true, "ไม่พบข้อมูลผู้ใช้งาน"],
     },
     cart_items: [
       {
-        book: { type: Types.ObjectId, ref: "books" },
+        product: {
+          type: Types.ObjectId,
+          ref: "products",
+          required: [true, "ไม่พบข้อมูลสินค้า"],
+        },
         quantity: {
           type: Number,
-          required: [true, "Quantity is required."],
-          min: 1,
-        },
-        price_per_day: {
-          type: Number,
-          required: [true, "Price per day is required."],
-        },
-        rental_duration: {
-          type: Number,
-          required: [true, "Rental duration is required."],
-          min: 1,
+          required: [true, "กรุณาระบุจำนวนสินค้า"],
+          min: [1, "จำนวนสินค้าต้องมีอย่างน้อย 1 ชิ้น"],
         },
       },
     ],
