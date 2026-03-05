@@ -22,7 +22,6 @@ app.use("/users", userRoutes);
 app.use("/roles", roleRoutes);
 app.use("/products", productRoutes);
 app.use("/categories", categoryRoutes);
-app.use("/publishers", publisherRoutes);
 app.use("/carts", cartRoutes);
 app.use("/orders", orderRoutes);
 
