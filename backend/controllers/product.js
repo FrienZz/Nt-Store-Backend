@@ -74,7 +74,7 @@ exports.addProduct = async (req, res) => {
       ? categories
       : [categories];
     if (validCategories.length !== categoriesArray.length) {
-      logger.error("เพิ่มข้อมูลสินค้าไม่สำเร็จ: หมวดหมู่บางรายการไม่ถูกต้อง");
+      logger.warn("เพิ่มข้อมูลสินค้าไม่สำเร็จ: หมวดหมู่บางรายการไม่ถูกต้อง");
       return res.status(404).json({ message: "หมวดหมู่บางรายการไม่ถูกต้อง" });
     }
 
@@ -160,7 +160,7 @@ exports.editProduct = async (req, res) => {
     const product = await Product.findOne({ product_id: productId });
 
     if (!product) {
-      logger.error(
+      logger.warn(
         `แก้ข้อมูลสินค้าไม่สำเร็จ: ไม่เจอรหัสสินค้า=${productId} นี้ในระบบ`,
       );
       return res.status(404).json({
@@ -205,11 +205,39 @@ exports.editProduct = async (req, res) => {
         ? updateData.categories
         : [updateData.categories];
       if (category.length !== updateData.categories.length) {
-        logger.error("แก้ข้อมูลสินค้าไม่สำเร็จ: หมวดหมู่บางรายการไม่ถูกต้อง");
+        logger.warn("แก้ข้อมูลสินค้าไม่สำเร็จ: หมวดหมู่บางรายการไม่ถูกต้อง");
         return res.status(404).json({
           message: `หมวดหมู่บางรายการไม่ถูกต้อง`,
         });
       }
+    }
+
+    if (updateData.package_items) {
+      let parsedPackageItems = JSON.parse(updateData.package_items);
+      if (product.type !== "package") {
+        return res.status(400).json({
+          message: "สินค้าแบบเดี่ยวไม่สามารถมีรายการแพ็คเกจได้",
+        });
+      }
+
+      if (parsedPackageItems.length === 0) {
+        return res.status(400).json({
+          message: "แพ็คเกจต้องมีสินค้าอย่างน้อย 1 รายการ",
+        });
+      }
+
+      const products = await Product.find({
+        _id: {
+          $in: parsedPackageItems.map((item) => item.product),
+        },
+        type: "single",
+      });
+      if (products.length !== parsedPackageItems.length) {
+        return res.status(400).json({
+          message: "มีสินค้าบางรายการไม่ถูกต้อง",
+        });
+      }
+      updateData.package_items = parsedPackageItems;
     }
 
     const updateProduct = await Product.findOneAndUpdate(
@@ -240,7 +268,7 @@ exports.deleteProduct = async (req, res) => {
     const product = await Product.findOne({ product_id: productId });
 
     if (!product) {
-      logger.error(
+      logger.warn(
         `ลบข้อมูลสินค้าไม่สำเร็จ: ไม่เจอรหัสสินค้า=${productId} นี้ในระบบ`,
       );
       return res.status(404).json({
@@ -298,7 +326,7 @@ exports.deletePackageItem = async (req, res) => {
       .lean();
 
     if (!packageData) {
-      logger.error(
+      logger.warn(
         `ลบข้อมูลสินค้าไม่สำเร็จ: ไม่เจอรหัสสินค้าแพ็คเกจ=${id} หรือรหัสสินค้า=${itemId} นี้ในระบบ`,
       );
       return res.status(404).json({
