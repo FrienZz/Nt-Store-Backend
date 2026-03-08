@@ -8,7 +8,7 @@ const { generateProductId } = require("../utils/generateId");
 exports.getAllProducts = async (req, res) => {
   try {
     const { date, type } = req.query;
-    const filter = {};
+    const filter = { is_deleted: false };
 
     if (date === "today") {
       const startOfDay = new Date();
@@ -50,7 +50,10 @@ exports.getAllProducts = async (req, res) => {
 exports.getProduct = async (req, res) => {
   const productId = req.params.id;
   try {
-    let product = await Product.findOne({ product_id: productId })
+    let product = await Product.findOne({
+      product_id: productId,
+      is_deleted: false,
+    })
       .populate("categories", "category_type")
       .populate({
         path: "package_items.product",
@@ -161,7 +164,10 @@ exports.editProduct = async (req, res) => {
       });
     }
 
-    const product = await Product.findOne({ product_id: productId });
+    const product = await Product.findOne({
+      product_id: productId,
+      is_deleted: false,
+    });
 
     if (!product) {
       logger.warn(
@@ -269,7 +275,10 @@ exports.editProduct = async (req, res) => {
 exports.deleteProduct = async (req, res) => {
   const productId = req.params.id;
   try {
-    const product = await Product.findOne({ product_id: productId });
+    const product = await Product.findOne({
+      product_id: productId,
+      is_deleted: false,
+    });
 
     if (!product) {
       logger.warn(
@@ -310,6 +319,7 @@ exports.deletePackageItem = async (req, res) => {
         product_id: id,
         type: "package",
         "package_items.product": itemId,
+        is_deleted: false,
       },
       {
         package_items: { $elemMatch: { product: itemId } },
