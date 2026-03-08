@@ -7,7 +7,7 @@ const { generateProductId } = require("../utils/generateId");
 
 exports.getAllProducts = async (req, res) => {
   try {
-    const { date } = req.query;
+    const { date, type } = req.query;
     const filter = {};
 
     if (date === "today") {
@@ -21,6 +21,10 @@ exports.getAllProducts = async (req, res) => {
         $gte: startOfDay,
         $lte: endOfDay,
       };
+    }
+
+    if (type) {
+      filter.type = type;
     }
 
     const products = await Product.find(filter)
@@ -274,14 +278,6 @@ exports.deleteProduct = async (req, res) => {
       return res.status(404).json({
         message: `ไม่เจอสินค้านี้ในระบบ`,
       });
-    }
-    if (product.img_url) {
-      const filename = path.basename(product.img_url);
-      const oldPath = path.join(process.cwd(), "uploads", filename);
-
-      if (fs.existsSync(oldPath)) {
-        fs.unlinkSync(oldPath);
-      }
     }
 
     const deleteProduct = await Product.findOneAndUpdate(
