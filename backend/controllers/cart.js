@@ -5,7 +5,7 @@ exports.getMyCart = async (req, res) => {
   try {
     const cart = await Cart.findOne({ user: req.user.id }).populate({
       path: "cart_items.product",
-      select: "name img_url price discount_percent package_items",
+      select: "product_id name img_url price discount_percent package_items",
     });
 
     if (!cart) {
