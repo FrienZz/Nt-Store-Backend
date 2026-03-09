@@ -4,6 +4,7 @@ const Product = require("../models/product");
 const Category = require("../models/category");
 const logger = require("../utils/logger");
 const { generateProductId } = require("../utils/generateId");
+const calculatePackageStock = require("../utils/calculatePackageStock");
 
 exports.getAllProducts = async (req, res) => {
   try {
@@ -60,6 +61,10 @@ exports.getProduct = async (req, res) => {
         select: "product_id name img_url price total_stock available_stock",
       })
       .lean();
+
+    if (product.type === "package" && product.package_items?.length) {
+      product.package_stock = calculatePackageStock(product.package_items);
+    }
 
     res.status(200).json({
       message: "เรียกดูข้อมูลสินค้าสำเร็จ",
