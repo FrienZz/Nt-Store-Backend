@@ -32,7 +32,7 @@ exports.getAllProducts = async (req, res) => {
       .populate("categories", "category_type")
       .populate({
         path: "package_items.product",
-        select: "product_id name img_url price total_stock available_stock",
+        select: "product_id name img_url available_stock",
       })
       .sort({ createdAt: -1 })
       .lean();
@@ -58,7 +58,7 @@ exports.getProduct = async (req, res) => {
       .populate("categories", "category_type")
       .populate({
         path: "package_items.product",
-        select: "product_id name img_url price total_stock available_stock",
+        select: "product_id name img_url available_stock",
       })
       .lean();
 
