@@ -1,12 +1,21 @@
 const Cart = require("../models/cart");
 const Product = require("../models/product");
+const calculatePackageStock = require("../utils/calculatePackageStock");
 
 exports.getMyCart = async (req, res) => {
   try {
-    const cart = await Cart.findOne({ user: req.user.id }).populate({
-      path: "cart_items.product",
-      select: "product_id name img_url price discount_percent package_items",
-    });
+    const cart = await Cart.findOne({ user: req.user.id })
+      .populate({
+        path: "cart_items.product",
+        select:
+          "product_id name img_url price discount_percent available_stock type package_items",
+        populate: {
+          path: "package_items.product",
+          model: "products",
+          select: "product_id name img_url available_stock",
+        },
+      })
+      .lean();
 
     if (!cart) {
       return res.status(200).json({
@@ -18,6 +27,13 @@ exports.getMyCart = async (req, res) => {
         },
       });
     }
+
+    cart.cart_items.forEach((item) => {
+      const product = item.product;
+      if (product.type === "package" && product.package_items?.length) {
+        product.package_stock = calculatePackageStock(product.package_items);
+      }
+    });
 
     res.status(200).json({
       message: "แสดงรายการหนังสือในตะกร้าสำเร็จ",
