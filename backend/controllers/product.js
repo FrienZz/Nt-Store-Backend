@@ -37,9 +37,22 @@ exports.getAllProducts = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
+    const result = products.map((product) => {
+      if (product.type !== "package") {
+        return product;
+      }
+
+      const package_stock = calculatePackageStock(product.package_items);
+
+      return {
+        ...product,
+        package_stock,
+      };
+    });
+
     res.status(200).json({
       message: "เรียกดูข้อมูลสินค้าสำเร็จ",
-      data: products,
+      data: result,
     });
   } catch (err) {
     res.status(400).json({
